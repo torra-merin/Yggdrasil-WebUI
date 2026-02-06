@@ -25,3 +25,5 @@ A cross-platform web interface for managing your Yggdrasil node.
 ```bash
 pip install fastapi uvicorn jinja2
 uvicorn app:app --reload
+
+Open http://127.0.0.1:8000 in your browser.
