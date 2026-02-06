@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="utf-8">
+    <title>Yggdrasil WebUI</title>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f5f7fa; padding: 2em; }
+        h1 { margin-bottom: 0.2em; display: flex; justify-content: space-between; align-items: center; }
+        .card { background: white; padding: 1.2em; border-radius: 10px; margin-bottom: 1.5em; box-shadow: 0 2px 8px rgba(0,0,0,0.06); max-width: 50%; }
+        .main-section{ display: inline-flex; flex-direction: row; align-items: flex-start; width: 100%; justify-content: space-evenly; }
+        .no-yggdrasil-section{display: flex;
+    flex-direction: column; align-content: center; flex-wrap: wrap; justify-content: space-around; align-items: center; background-color: #F5F7FA; height: -webkit-fill-available; top: 0px; left: 0px; width: -webkit-fill-available; position: fixed; z-index: 1;}
+        .peer-card { border: 1px solid #ddd; border-radius: 8px; padding: 0.8em; margin-bottom: 0.7em; background: #fafafa; }
+        .peer-header { display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-weight: bold; }
+        .peer-status { margin-top: 0.4em; font-size: 0.85em; color: #555; font-family: monospace; word-break: break-word; }
+        button { border: none; border-radius: 6px; padding: 0.4em 0.6em; cursor: pointer; }
+        .btn-add { background: #2ecc71; color: white; width: 15%; }
+        .btn-ref { background: #2ecc71; color: white; }
+        .btn-del { background: #e74c3c; color: white; }
+        input { width: 80%; padding: 0.5em; margin-bottom: 0.6em; border-radius: 6px; border: 1px solid #ccc; }
+        pre { background: #f0f0f0; padding: 1em; border-radius: 6px; overflow-x: auto; }
+        @media (max-width: 1500px) {
+            .main-section { display: inline-flex; flex-direction: column; align-items: center; width: 100%; justify-content: space-evenly; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>
+    <span><i class="fa-solid fa-network-wired"></i> Yggdrasil WebUI</span>
+    <span>
+        {% if platform_system != "Windows" %}
+        <button id="toggle-btn" class="btn-add">
+            <i class="fa-solid fa-power-off"></i> <span id="toggle-text">Checking...</span>
+        </button>
+        {% else %}
+        <p style="display:none;">Not available on windows</p>
+        {% endif %}
+        <button onclick="window.location.reload();" class="btn-ref">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+        </button>
+    </span>
+</h1>
+
+<p>A web interface for your local node</p>
+
+{% if not ygg_found %}
+<section class="no-yggdrasil-section">
+<div class="card" style="width: 100%;">
+    <strong style="color:red">yggdrasilctl not found!</strong>
+    <p>Please specify the path to yggdrasilctl manually:</p>
+    <form method="post" action="/set-yggdrasil-path">
+        <input name="path" placeholder="C:\Program Files\Yggdrasil\yggdrasilctl.exe" required>
+        <button class="btn-add">
+            <i class="fa-solid fa-floppy-disk"></i> Save path
+        </button>
+    </form>
+</div>
+</section>
+{% endif %}
+
+<section class="main-section">
+<div class="card">
+    <h2><i class="fa-solid fa-id-card"></i> Node</h2>
+    <pre>{{ self_info }}</pre> <br>
+
+    <h2><i class="fa-solid fa-plus"></i> Add Peer</h2>
+    <form method="post" action="/add-peer">
+        <input name="uri" placeholder="tls://node.example:12345" required>
+        <button class="btn-add">
+            <i class="fa-solid fa-circle-plus"></i> Add peer
+        </button>
+    </form>
+</div>
+
+<div class="card">
+    <h2><i class="fa-solid fa-link"></i> Peers</h2>
+
+    {% for peer in peers %}
+    <div class="peer-card">
+        <div class="peer-header">
+            <span>{{ peer.uri }}</span>
+            <form method="post" action="/remove-peer">
+                <input type="hidden" name="uri" value="{{ peer.uri }}">
+                <button class="btn-del" title="Remove peer">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </form>
+        </div>
+        <div class="peer-status">{{ peer.status }}</div>
+    </div>
+    {% else %}
+    <em>No peers</em>
+    {% endfor %}
+    <p>Public peers: <a href="https://publicpeers.neilalexander.dev/" target="_blank">publicpeers.neilalexander.dev</a></p>
+</div>
+</section>
+
+<script>
+async function updateYggState() {
+    try {
+        const resp = await fetch('/yggdrasil-state');
+        const data = await resp.json();
+        const btn = document.getElementById("toggle-btn");
+        const txt = document.getElementById("toggle-text");
+        if(!btn) return; // Windows disabled
+        if(data.running){
+            txt.innerText = "Stop";
+            btn.classList.remove("btn-add");
+            btn.classList.add("btn-del");
+        } else {
+            txt.innerText = "Start";
+            btn.classList.remove("btn-del");
+            btn.classList.add("btn-add");
+        }
+    } catch(e){
+        console.error(e);
+    }
+}
+
+const toggleBtn = document.getElementById("toggle-btn");
+if(toggleBtn){
+    toggleBtn.addEventListener("click", async () => {
+        try {
+            await fetch('/yggdrasil-toggle', {method: 'POST'});
+            updateYggState();
+        } catch(e){
+            console.error(e);
+        }
+    });
+}
+
+// Actualitza cada 5 segons
+setInterval(updateYggState, 5000);
+updateYggState();
+</script>
+
+</body>
+</html>
