@@ -6,29 +6,50 @@ import json
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
+
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 CONFIG_FILE = "config.json"
 
 def load_config():
     if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, "r") as f:
-            return json.load(f)
+        try:
+            with open(CONFIG_FILE, "r") as f:
+                return json.load(f)
+        except Exception:
+            pass
     return {}
 
 def save_config(data):
     with open(CONFIG_FILE, "w") as f:
         json.dump(data, f)
 
-# -------------------------
-# Detecta yggdrasilctl
-# -------------------------
-def find_yggdrasilctl():
+def get_config_value(key, default=None):
+    return load_config().get(key, default)
+
+def set_config_value(key, value):
     config = load_config()
-    if "yggdrasilctl_path" in config and os.path.exists(config["yggdrasilctl_path"]):
-        return config["yggdrasilctl_path"]
+    config[key] = value
+    save_config(config)
+
+def validate_yggctl(path):
+    if not path or not os.path.exists(path):
+        return False
+    try:
+        result = subprocess.run([path, "getself"], capture_output=True, text=True)
+        return result.returncode == 0
+    except Exception:
+        return False
+
+def find_yggdrasilctl():
+    saved = get_config_value("yggdrasilctl_path")
+    if saved and validate_yggctl(saved):
+        return saved
 
     system = platform.system()
     paths_to_check = []
@@ -51,20 +72,19 @@ def find_yggdrasilctl():
         ]
 
     for path in paths_to_check:
-        if os.path.exists(path):
+        if validate_yggctl(path):
+            set_config_value("yggdrasilctl_path", path)
             return path
 
     which_path = shutil.which("yggdrasilctl")
-    if which_path:
+    if which_path and validate_yggctl(which_path):
+        set_config_value("yggdrasilctl_path", which_path)
         return which_path
 
     return None
 
 YGGCTL = find_yggdrasilctl()
 
-# -------------------------
-# Funcions Yggdrasil
-# -------------------------
 def run_yggctl(args):
     if not YGGCTL:
         return "ERROR: yggdrasilctl no trobat"
@@ -92,9 +112,6 @@ def parse_peers(raw):
             peers.append({"uri": uri, "status": status})
     return peers
 
-# -------------------------
-# Control servei Yggdrasil
-# -------------------------
 def is_yggdrasil_running():
     system = platform.system()
     try:
@@ -129,22 +146,16 @@ def yggdrasil_toggle():
 
     return JSONResponse({"running": not running})
 
-# -------------------------
-# Configuració manual de yggdrasilctl
-# -------------------------
 @app.post("/set-yggdrasil-path")
 def set_yggdrasil_path(path: str = Form(...)):
-    if os.path.exists(path):
-        save_config({"yggdrasilctl_path": path})
+    if validate_yggctl(path):
+        set_config_value("yggdrasilctl_path", path)
         global YGGCTL
         YGGCTL = path
         return RedirectResponse("/", status_code=303)
     else:
-        return HTMLResponse("<strong>Invalid path</strong>", status_code=400)
+        return HTMLResponse("<strong>Invalid path or binary not working</strong>", status_code=400)
 
-# -------------------------
-# Rutes principals
-# -------------------------
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
     self_info = run_yggctl(["getself"])
