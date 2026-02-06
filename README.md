@@ -1,12 +1,11 @@
 # Yggdrasil WebUI
 
-A cross-platform web interface for managing your Yggdrasil node.
-
-**Note:** This project was made for fun with the help of ChatGPT. Icon by OpenClipart-Vectors, licensed via [Pixabay](https://pixabay.com/es/vectors/hoja-planta-verde-ecolog%c3%ada-147490/).
+A cross-platform web interface for managing your Yggdrasil node. The user must have [Yggdrasil](https://yggdrasil-network.github.io/) installed on their system to use this WebUI.
 
 **Tested only with:** Windows 11 and Yggdrasil 0.5.12
 
-**Important:** The user must have [Yggdrasil](https://yggdrasil-network.github.io/) installed on their system to use this WebUI.
+**Note:** This is an unofficial web interface for Yggdrasil Network and is not affiliated with or endorsed by the Yggdrasil developers. This project was made for fun with the help of ChatGPT. 
+Icon by OpenClipart-Vectors, licensed via [Pixabay](https://pixabay.com/es/vectors/hoja-planta-verde-ecolog%c3%ada-147490/).
 
 ## Screenshot
 
