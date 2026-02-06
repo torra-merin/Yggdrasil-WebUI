@@ -21,7 +21,8 @@ A cross-platform web interface for managing your Yggdrasil node.
 - Manual `yggdrasilctl` path configuration
 
 ## Installation
-
+Download the code and extract it
+On the same folder, open command line and run:
 ```bash
 pip install fastapi uvicorn jinja2
 uvicorn app:app --reload
