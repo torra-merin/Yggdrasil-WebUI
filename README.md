@@ -4,7 +4,7 @@ A cross-platform web interface for managing your Yggdrasil node. The user must h
 
 **Tested only with:** Windows 11 and Yggdrasil 0.5.12
 
-**Note:** This is an unofficial web interface for Yggdrasil Network and is not affiliated with or endorsed by the Yggdrasil developers. This project was made for fun with the help of ChatGPT. 
+**Note:** This is an unofficial web interface for Yggdrasil Network (LGPLv3) and is not affiliated with or endorsed by the Yggdrasil developers. This project was made for fun with the help of ChatGPT. 
 Icon by OpenClipart-Vectors, licensed via [Pixabay](https://pixabay.com/es/vectors/hoja-planta-verde-ecolog%c3%ada-147490/).
 
 ## Screenshot
