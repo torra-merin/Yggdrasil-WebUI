@@ -30,4 +30,4 @@ A cross-platform web interface for managing your Yggdrasil node.
 pip install fastapi uvicorn jinja2
 
 ```
-4.Run main.py.
+4. Run main.py.
