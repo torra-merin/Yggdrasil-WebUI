@@ -2,9 +2,11 @@
 
 A cross-platform web interface for managing your Yggdrasil node.
 
-**Note:** This project was created with the assistance of ChatGPT.  
+**Note:** Project done for fun with the assistance of ChatGPT.   
 
-**Tested only with:** Windows 11 and Yggdrasil 0.5.12
+**Tested only with:** Windows 11 and Yggdrasil 0.5.12  
+
+**Important:** The user must have [Yggdrasil](https://yggdrasil-network.github.io/) installed on their system to use this WebUI.
 
 ## Screenshot
 
